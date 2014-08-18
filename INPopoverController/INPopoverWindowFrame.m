@@ -36,8 +36,8 @@
 		[path stroke];
 	}
 
-	const CGFloat arrowWidth = self.arrowSize.width;
-	const CGFloat arrowHeight = self.arrowSize.height;
+	const CGFloat arrowWidth = self.arrowSize.width * 0.0;
+	const CGFloat arrowHeight = self.arrowSize.height * 0.0;
 	const CGFloat radius = self.cornerRadius;
 
 	if (self.topHighlightColor) {
@@ -61,10 +61,18 @@
 - (NSBezierPath *)_popoverBezierPathWithRect:(NSRect)aRect
 {
 	const CGFloat radius = self.cornerRadius;
-	const CGFloat arrowWidth = self.arrowSize.width;
-	const CGFloat arrowHeight = self.arrowSize.height;
-	const CGFloat inset = radius + arrowHeight;
-	const NSRect drawingRect = NSInsetRect(aRect, inset, inset);
+	const CGFloat arrowWidth = self.arrowSize.width ;
+	const CGFloat arrowHeight = self.arrowSize.height ;
+	const CGFloat inset = radius + self.borderWidth/2.0;
+	NSRect drawingRect = NSInsetRect(aRect,inset,inset);
+        if (self.arrowDirection == INPopoverArrowDirectionLeft || self.arrowDirection == INPopoverArrowDirectionRight) {
+                drawingRect.size.width -= arrowHeight;
+                drawingRect.origin.x += (self.arrowDirection == INPopoverArrowDirectionLeft) ? arrowHeight : 0.0;
+        }
+        else {
+                drawingRect.size.height -= arrowHeight;
+                drawingRect.origin.y += (self.arrowDirection == INPopoverArrowDirectionDown) ? arrowHeight : 0.0;
+        }
 	const CGFloat minX = NSMinX(drawingRect);
 	const CGFloat maxX = NSMaxX(drawingRect);
 	const CGFloat minY = NSMinY(drawingRect);

@@ -40,7 +40,7 @@
                                selector:@selector(windowWillStartLiveResize:)
                                    name:NSWindowWillStartLiveResizeNotification
                                  object:self];
-                self.fixedEdges = NSMinXEdge | NSMaxXEdge;
+                self.self.resizingMask = NSMinXEdge | NSMaxXEdge;
 	}
 	return self;
 }
@@ -54,13 +54,13 @@
 - (NSRect)contentRectForFrameRect:(NSRect)windowFrame
 {
 	windowFrame.origin = NSZeroPoint;
-	const CGFloat arrowHeight = self.frameView.arrowSize.height;
+	const CGFloat arrowHeight = self.frameView.arrowSize.height * 0.0;
 	return NSInsetRect(windowFrame, arrowHeight, arrowHeight);
 }
 
 - (NSRect)frameRectForContentRect:(NSRect)contentRect
 {
-	const CGFloat arrowHeight = self.frameView.arrowSize.height;
+	const CGFloat arrowHeight = self.frameView.arrowSize.height *0.0;
 	return NSInsetRect(contentRect, -arrowHeight, -arrowHeight);
 }
 
@@ -208,13 +208,22 @@
         NSRect newFrame = self.resizeStartFrame;
         if (NSWidth(frameRect) != NSWidth(self.resizeStartFrame))
         {
-            CGFloat deltaWidth = self.resizeRight
-                                  ? mouseLocation.x - self.resizeStartLocation.x
-                                  : self.resizeStartLocation.x - mouseLocation.x;
+                CGFloat deltaX = mouseLocation.x - self.resizeStartLocation.x;
                 
-                CGFloat deltaX = (self.fixedEdges & NSMinXEdge) ? 0.0 : deltaWidth;
-            newFrame.origin.x -= deltaX;
-                newFrame.size.width += ((self.fixedEdges & NSMaxXEdge) ? 0.0 : deltaWidth + deltaX);
+                CGFloat deltaWidth = 0.0;
+                CGFloat deltaOrigin = 0.0;
+                if (self.resizingMask & NSViewWidthSizable) {
+                        if (!self.resizeRight && (self.resizingMask & NSViewMinXMargin)) {
+                                deltaOrigin = deltaX;
+                                deltaWidth = -deltaX * ((self.resizingMask & NSViewMaxXMargin) ? 2.0 : 1.0);
+                        }
+                        else if (self.resizeRight && (self.resizingMask & NSViewMaxXMargin)) {
+                                deltaWidth = deltaX * ((self.resizingMask & NSViewMinXMargin) ? 2.0 : 1.0);
+                                deltaOrigin = -((self.resizingMask & NSViewMinXMargin) ? deltaX : 0.0);
+                        }
+                }
+            newFrame.origin.x += deltaOrigin;
+            newFrame.size.width += deltaWidth;
                 
             if (NSWidth(newFrame) < self.minSize.width)
             {
@@ -229,12 +238,22 @@
         }
         if (NSHeight(frameRect) != NSHeight(self.resizeStartFrame))
         {
-            CGFloat deltaHeight = self.resizeTop
-                                  ? mouseLocation.y - self.resizeStartLocation.y
-                                  : self.resizeStartLocation.y - mouseLocation.y;
+                CGFloat deltaY = mouseLocation.y - self.resizeStartLocation.y;
+                CGFloat deltaHeight = 0.0;
+                CGFloat deltaOrigin = 0.0;
+                if (self.resizingMask & NSViewHeightSizable) {
+                        if (!self.resizeTop && (self.resizingMask & NSViewMinYMargin)) {
+                                deltaOrigin = deltaY;
+                                deltaHeight = -deltaY * ((self.resizingMask & NSViewMaxYMargin) ? 2.0 : 1.0);
+                        }
+                        else if (self.resizeTop && (self.resizingMask & NSViewMaxYMargin)) {
+                                deltaOrigin = -((self.resizingMask & NSViewMinYMargin) ? deltaY : 0.0);
+                                deltaHeight = deltaY * ((self.resizingMask & NSViewMinYMargin) ? 2.0 : 1.0);
+                        }
+                }
                 
-            newFrame.origin.y -= deltaHeight;
-            newFrame.size.height += deltaHeight * 2;
+            newFrame.origin.y += deltaOrigin;
+            newFrame.size.height += deltaHeight ;
                 
             if (NSHeight(newFrame) < self.minSize.height)
             {
@@ -248,7 +267,7 @@
             }
         }
         
-            if (self.fixedEdges & NSMinXEdge) { newFrame.origin.x = NSMinX(self.resizeStartFrame); }
+            if (self.resizingMask & NSMinXEdge) { newFrame.origin.x = NSMinX(self.resizeStartFrame); }
             
         // Don't allow resizing upwards when attached to menu bar
 //        if (frameRect.origin.y != self.resizeStartFrame.origin.y)

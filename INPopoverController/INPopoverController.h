@@ -68,6 +68,8 @@
 /** Whether the popover is currently visible or not **/
 @property (nonatomic, assign, readonly) BOOL popoverIsVisible;
 
+@property (nonatomic) NSAutoresizingMaskOptions resizingMask;
+
 #pragma mark -
 #pragma mark Methods
 

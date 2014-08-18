@@ -17,7 +17,7 @@
 @property (nonatomic, readonly) INPopoverWindowFrame *frameView; // Equivalent to contentView
 @property (nonatomic, assign) INPopoverController *popoverController;
 @property (nonatomic, strong) NSView *popoverContentView;
-@property (nonatomic) NSUInteger fixedEdges;
+@property (nonatomic) NSAutoresizingMaskOptions resizingMask;
 
 - (void)presentAnimated;
 - (void)dismissAnimated;

@@ -14,4 +14,6 @@
 @property (nonatomic, strong) INPopoverController *popoverController;
 @property (weak) IBOutlet NSWindow *window;
 - (IBAction)togglePopover:(id)sender;
+
+- (IBAction)changeResizeMask:(id)sender;
 @end

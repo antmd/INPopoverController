@@ -14,6 +14,7 @@
 	NSRect _screenRect;
 	NSRect _viewRect;
 }
+@synthesize resizingMask = _resizingMask;
 
 #pragma mark -
 #pragma mark Initialization
@@ -288,6 +289,14 @@
 	_popoverWindow.frameView.arrowDirection = direction;
 }
 
+-(void)setResizingMask:(NSAutoresizingMaskOptions)resizingMask
+{
+        if (resizingMask != _resizingMask) {
+                _resizingMask = resizingMask;
+                [(INPopoverWindow*)self.popoverWindow setResizingMask:resizingMask];
+        }
+}
+
 #pragma mark -
 #pragma mark Private
 
@@ -296,6 +305,7 @@
 {
 	// Create an empty popover window
 	_popoverWindow = [[INPopoverWindow alloc] initWithContentRect:NSZeroRect styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+        [_popoverWindow setResizingMask:self.resizingMask];
 	_popoverWindow.popoverController = self;
 
 	// set defaults like iCal popover
