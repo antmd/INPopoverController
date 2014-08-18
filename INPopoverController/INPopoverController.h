@@ -8,7 +8,7 @@
 
 @protocol INPopoverControllerDelegate;
 
-@interface INPopoverController : NSObject
+@interface INPopoverController : NSObject <NSAnimationDelegate>
 
 #pragma mark -
 #pragma mark Properties

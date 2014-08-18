@@ -56,15 +56,15 @@
 {
 	if (self.popoverIsVisible) {return;} // If it's already visible, do nothing
 	NSWindow *mainWindow = [positionView window];
+	INPopoverArrowDirection calculatedDirection = [self _arrowDirectionWithPreferredArrowDirection:direction]; // Calculate the best arrow direction
+	[self _setArrowDirection:calculatedDirection]; // Change the arrow direction of the popover
 	_positionView = positionView;
 	_viewRect = rect;
 	_screenRect = [positionView convertRect:rect toView:nil]; // Convert the rect to window coordinates
 	_screenRect.origin = [mainWindow convertBaseToScreen:_screenRect.origin]; // Convert window coordinates to screen coordinates
-	INPopoverArrowDirection calculatedDirection = [self _arrowDirectionWithPreferredArrowDirection:direction]; // Calculate the best arrow direction
-	[self _setArrowDirection:calculatedDirection]; // Change the arrow direction of the popover
 	NSRect windowFrame = [self popoverFrameWithSize:self.contentSize andArrowDirection:calculatedDirection]; // Calculate the window frame based on the arrow direction
 	[_popoverWindow setFrame:windowFrame display:YES]; // Se the frame of the window
-	[[_popoverWindow animationForKey:@"alphaValue"] setDelegate:self];
+	[(NSAnimation*)[_popoverWindow animationForKey:@"alphaValue"] setDelegate:self];
 
 	// Show the popover
 	[self _callDelegateMethod:@selector(popoverWillShow:)]; // Call the delegate
@@ -92,6 +92,7 @@
 		// this is only needed if closesWhenPopoverResignsKey is NO, otherwise we already get a "resign key" notification when resigning active
 		[nc addObserver:self selector:@selector(closePopover:) name:NSApplicationDidResignActiveNotification object:nil];
 	}
+        [nc addObserver:self selector:@selector(_popoverWindowDidResize:) name:NSWindowDidEndLiveResizeNotification object:_popoverWindow];
 }
 
 - (void)recalculateAndResetArrowDirection
@@ -277,7 +278,7 @@
 - (void)setContentSize:(NSSize)newContentSize
 {
 	// We use -frameRectForContentRect: just to get the frame size because the origin it returns is not the one we want to use. Instead, -windowFrameWithSize:andArrowDirection: is used to  complete the frame
-	_contentSize = newContentSize;
+        _contentSize = _contentViewController.view.frame.size;
 	NSRect adjustedRect = [self popoverFrameWithSize:newContentSize andArrowDirection:self.arrowDirection];
 	[_popoverWindow setFrame:adjustedRect display:YES animate:self.animates];
 }
@@ -405,6 +406,13 @@
 	[[_popoverWindow animationForKey:@"alphaValue"] performSelector:@selector(setDelegate:) withObject:nil afterDelay:0];
 }
 
+-(void)_popoverWindowDidResize:(NSNotification*)notification
+{
+        NSLog(@"WINDOW RESIZED!");
+        _contentSize = [self.popoverWindow contentRectForFrameRect:self.popoverWindow.frame].size;
+	NSRect windowFrame = [self popoverFrameWithSize:self.contentSize andArrowDirection:self.arrowDirection]; // Calculate the window frame based on the arrow direction
+	[_popoverWindow setFrame:windowFrame display:YES]; // Se the frame of the window
+}
 - (void)_callDelegateMethod:(SEL)selector
 {
 	if ([self.delegate respondsToSelector:selector]) {
